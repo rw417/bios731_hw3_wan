@@ -62,11 +62,11 @@ params_grid <- expand.grid(
 # Define number of simulations and parameter scenario
 if(doLocal) {
   scenario = 2
-  params = params[scenario,]
+  params = params_grid[scenario,]
 }else{
   # defined from batch script params
   scenario <- as.numeric(commandArgs(trailingOnly=TRUE))
-  params = params[scenario,]
+  params = params_grid[scenario,]
 }
 
 ###############################################################
