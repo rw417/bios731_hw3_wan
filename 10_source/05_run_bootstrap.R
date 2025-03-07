@@ -1,7 +1,3 @@
-library(foreach)
-library(doParallel)
-
-
 ####################
 # Run bootstrap on simulated data
 run_bootstrap <- function(simdata, sim_beta_hat, nboot, nboot_t, seed = NULL) {
