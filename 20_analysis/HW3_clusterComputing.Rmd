@@ -8,10 +8,13 @@ urlcolor: blue
 ---
 
 ```{r, include=FALSE}
-
 library(tidyverse)
-knitr::opts_chunk$set(tidy = FALSE)
+library(ggplot2)
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 ```
+
+## GitHub Repo Link:
+https://github.com/rw417/bios731_hw3_wan
 
 ## Context
 
@@ -111,5 +114,83 @@ Create plots with *Monte Carlo standard error bars* to summarize the following:
 
 Write 1-2 paragraphs summarizing these results.
 
+```{r}
+load(file = here::here("30_results", "performance_measures.RDA"))
+```
+
+\newpage
+
+**Bias**
+```{r}
+bias_df %>%
+  mutate(n = factor(n)) %>%
+  ggplot(aes(error_form, bias, color = method)) + 
+  geom_point(position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = bias - se_bias, ymax = bias + se_bias), width = 0.2,
+                position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  facet_wrap(~beta_true, labeller = label_both)
+```
+
+\newpage
+
+**Coverage**
+```{r}
+coverage_df %>%
+  mutate(n = factor(n)) %>%
+  ggplot(aes(error_form, coverage, color = method)) + 
+  geom_point(position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = coverage - se_coverage, ymax = coverage + se_coverage), width = 0.2,
+                position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 0.95, linetype = 2) +
+  facet_grid(~beta_true, labeller = label_both)
+```
+
+\newpage
+
+**Power**
+
+We calculated the power for correctly rejecting $H_0: \beta_{treatment} = 0$ when the truth is $\beta_{treatment} = 0.5$.
+```{r}
+power_df %>%
+  mutate(n = factor(n)) %>%
+  ggplot(aes(error_form, power, color = method)) + 
+  geom_point(position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = power - se_power, ymax = power + se_power), width = 0.2,
+                position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 0.8, linetype = 2)
+```
+
+\newpage
+
+**Type I error**
+
+We calculated the power for incorrectly rejecting $H_0: \beta_{treatment} = 0$ when the truth is $\beta_{treatment} = 0$.
+```{r}
+typeI_df %>%
+  mutate(n = factor(n)) %>%
+  ggplot(aes(error_form, typeI, color = method)) + 
+  geom_point(position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = typeI - se_typeI, ymax = typeI + se_typeI), width = 0.2,
+                position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 0.05, linetype = 2)
+```
+
+\newpage
+
+**Computation Time**
+
+```{r}
+time_df %>%
+  ggplot(aes(method, run_time, fill=method)) + 
+  geom_boxplot(position = position_dodge(width = 1)) +
+  coord_flip() +
+  labs(y = "time (seconds)") +
+  theme(legend.position = "none")
+```
+
+**Summary**
+
+Both the Wald and the percentile methods produced the exact same bias estimates for $\hat{\beta}$ which is expected because we used the same bootstrap datasets for both methods. Both methods had higher coverage when we correctly specified the error distribution for the regression. When the error distribution was misspecified, the percentile method had higher coverage than the Wald method, suggesting that it is more robust. This advantage is more noticeable when the true $\beta$ is 0. Unsurprisingly, both methods produced very low power estimates when we correctly specify the error distribution because our sample size is very small at $n=20$ and the true effect size is not huge at $beta_{treatment}=0.5$. However, power estimates were quite high when we misspecify the error distribution. This was probably because we tended to over estimate the effect size when the error has a gamma distribution (biases were positive when errors were gamma distributed). Type I error rates were well controlled for both methods under both error distributions. The standard error estimates for statistical power and Type I error were quite large. We would need to run more simulations to get more precise estimates. The percentile method took slightly longer to run than the Wald method, but the difference was not huge.
 
 
